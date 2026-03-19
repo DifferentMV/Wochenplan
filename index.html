@@ -1,577 +1,223 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kinky Wochenplan</title>
-  <style>
-    :root{
-      --bg:#120a12;
-      --panel:#1c1220;
-      --panel-2:#25172a;
-      --text:#f6eaf4;
-      --muted:#c9adc5;
-      --line:#4a2946;
-      --accent:#ff4fa3;
-      --accent-2:#ff86c1;
-      --glow:0 0 0 1px rgba(255,79,163,.22),0 0 24px rgba(255,79,163,.10);
-      --ok:#7ce0b1;
-      --warn:#ffd37a;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(255,79,163,.14), transparent 32%),
-        radial-gradient(circle at top left, rgba(255,134,193,.09), transparent 24%),
-        linear-gradient(180deg, #140b14 0%, #0e0810 100%);
-      color:var(--text);
-      min-height:100vh;
-    }
-    .wrap{
-      max-width:1180px;
-      margin:0 auto;
-      padding:28px 18px 40px;
-    }
-    .hero{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:18px;
-      margin-bottom:24px;
-      padding:22px;
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(255,79,163,.07), rgba(255,79,163,.02));
-      box-shadow:var(--glow);
-    }
-    h1{
-      margin:0 0 6px;
-      font-size:clamp(1.8rem, 3vw, 2.8rem);
-      letter-spacing:.02em;
-    }
-    .sub{
-      margin:0;
-      color:var(--muted);
-    }
-    .status{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 14px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      color:var(--accent-2);
-      font-size:.95rem;
-      white-space:nowrap;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns:1.3fr .9fr;
-      gap:20px;
-    }
-    .panel{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:18px;
-      box-shadow:var(--glow);
-      backdrop-filter:blur(8px);
-    }
-    .panel h2{
-      margin:0 0 14px;
-      font-size:1.1rem;
-      letter-spacing:.02em;
-    }
-    .top-controls{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-bottom:16px;
-    }
-    label{
-      display:block;
-      font-size:.86rem;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-    input, select, textarea, button{
-      width:100%;
-      font:inherit;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
-      padding:12px 14px;
-      outline:none;
-      transition:.18s ease;
-    }
-    input:focus, select:focus, textarea:focus{
-      border-color:var(--accent);
-      box-shadow:0 0 0 3px rgba(255,79,163,.18);
-    }
-    button{
-      cursor:pointer;
-      font-weight:600;
-      background:linear-gradient(180deg, rgba(255,79,163,.18), rgba(255,79,163,.09));
-    }
-    button:hover{border-color:var(--accent)}
-    button.secondary{
-      background:var(--panel);
-    }
-    button.ghost{
-      background:transparent;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kinky Wochenplan</title>
 
-    .week-table{
-      display:grid;
-      gap:10px;
-    }
-    .week-head, .day-row{
-      display:grid;
-      grid-template-columns:135px repeat(3,1fr);
-      gap:10px;
-      align-items:center;
-    }
-    .week-head{
-      color:var(--muted);
-      font-size:.85rem;
-      padding:0 6px;
-    }
-    .day-row{
-      padding:10px;
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-    }
-    .day-name{
-      font-weight:700;
-      letter-spacing:.01em;
-      color:var(--accent-2);
-    }
+<style>
+:root{
+  --bg:#120a12;
+  --panel:#1c1220;
+  --panel-2:#25172a;
+  --text:#f6eaf4;
+  --muted:#c9adc5;
+  --line:#4a2946;
+  --accent:#ff4fa3;
+}
 
-    .task-form{
-      display:grid;
-      grid-template-columns:1.4fr .8fr .8fr auto;
-      gap:10px;
-      margin-bottom:14px;
-    }
-    .task-list{
-      display:grid;
-      gap:8px;
-      max-height:320px;
-      overflow:auto;
-      padding-right:4px;
-    }
-    .task-item{
-      display:grid;
-      grid-template-columns:1fr auto auto auto;
-      gap:8px;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.06);
-      background:var(--panel-2);
-    }
-    .task-meta{
-      color:var(--muted);
-      font-size:.84rem;
-    }
-    .tag{
-      display:inline-block;
-      font-size:.76rem;
-      padding:5px 8px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      color:var(--accent-2);
-      background:rgba(255,79,163,.08);
-    }
-    .tiny{
-      padding:8px 10px;
-      width:auto;
-    }
-    .output{
-      min-height:280px;
-      white-space:pre-wrap;
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:16px;
-      line-height:1.5;
-    }
-    .actions{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin-top:12px;
-    }
-    .muted{
-      color:var(--muted);
-      font-size:.9rem;
-    }
-    .footer-note{
-      margin-top:14px;
-      color:var(--muted);
-      font-size:.84rem;
-    }
-    .ok{color:var(--ok)}
-    .warn{color:var(--warn)}
+body{
+  margin:0;
+  font-family:Inter, sans-serif;
+  background:linear-gradient(180deg,#140b14,#0e0810);
+  color:var(--text);
+}
 
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-      .top-controls{grid-template-columns:1fr 1fr}
-    }
-    @media (max-width: 760px){
-      .hero{flex-direction:column;align-items:flex-start}
-      .week-head{display:none}
-      .day-row{
-        grid-template-columns:1fr;
-      }
-      .task-form{
-        grid-template-columns:1fr;
-      }
-      .actions{grid-template-columns:1fr}
-    }
-  </style>
+.wrap{max-width:1000px;margin:auto;padding:20px;}
+
+h1{margin:0 0 10px;}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:20px;
+}
+
+input, select, button{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#1a101c;
+  color:var(--text);
+}
+
+button{cursor:pointer;}
+
+.week-row{
+  display:grid;
+  grid-template-columns:120px repeat(3,1fr);
+  gap:8px;
+  margin-bottom:6px;
+}
+
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:10px;}
+.output{white-space:pre-wrap;background:#1a101c;padding:10px;border-radius:10px;}
+
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <div>
-        <h1>Kinky Wochenplan</h1>
-        <p class="sub">Schlichte Browser-Version im dunklen Queer-Look. Für Vorfreude, Verbindlichkeit und einen sauberen Wochenüberblick.</p>
-      </div>
-      <div class="status">Vorschlag zur Abstimmung</div>
-    </section>
+<div class="wrap">
 
-    <div class="grid">
-      <section class="panel">
-        <h2>Wochenübersicht</h2>
+<h1>Wochenplan</h1>
 
-        <div class="top-controls">
-          <div>
-            <label for="startDate">Von</label>
-            <input id="startDate" type="date" />
-          </div>
-          <div>
-            <label for="endDate">Bis</label>
-            <input id="endDate" type="date" />
-          </div>
-          <div>
-            <label for="planStatus">Status</label>
-            <select id="planStatus">
-              <option>vorgeschlagen</option>
-              <option>genehmigt</option>
-              <option>geändert</option>
-            </select>
-          </div>
-          <div>
-            <label for="ownerName">Für</label>
-            <input id="ownerName" type="text" placeholder="Anja" />
-          </div>
-        </div>
+<div class="panel">
+<label>Von</label>
+<input id="startDate" type="date">
 
-        <div class="week-table">
-          <div class="week-head">
-            <div>Tag</div>
-            <div>Slot 1</div>
-            <div>Slot 2</div>
-            <div>Slot 3</div>
-          </div>
-          <div id="weekRows"></div>
-        </div>
-      </section>
+<label>Bis</label>
+<input id="endDate" type="date">
 
-      <section class="panel">
-        <h2>Aufgabenliste</h2>
+<label>Status</label>
+<select id="status">
+<option>vorgeschlagen</option>
+<option>genehmigt</option>
+</select>
+</div>
 
-        <div class="task-form">
-          <input id="taskName" type="text" placeholder="Neue Aufgabe hinzufügen" />
-          <select id="taskCategory">
-            <option>Wunsch</option>
-            <option>Aufgabe</option>
-            <option>Disziplin</option>
-          </select>
-          <input id="taskDuration" type="text" placeholder="z. B. 15 Min." />
-          <button id="addTaskBtn" class="tiny">Hinzufügen</button>
-        </div>
+<div class="panel" id="week"></div>
 
-        <div id="taskList" class="task-list"></div>
+<div class="panel">
+<input id="taskInput" placeholder="Neue Aufgabe">
+<select id="cat">
+<option>Wunsch</option>
+<option>Aufgabe</option>
+<option>Disziplin</option>
+</select>
+<button onclick="addTask()">Hinzufügen</button>
 
-        <p class="footer-note">Alles bleibt lokal im Browser gespeichert. Praktisch für GitHub Pages oder lokale Nutzung.</p>
-      </section>
-    </div>
+<div id="tasks"></div>
+</div>
 
-    <section class="panel" style="margin-top:20px;">
-      <h2>Ausgabe</h2>
-      <div id="output" class="output">Noch kein Wochenplan erstellt.</div>
-      <div class="actions">
-        <button id="generateBtn">Wochenplan erstellen</button>
-        <button id="copyBtn" class="secondary">Text kopieren</button>
-        <button id="resetBtn" class="ghost">Woche leeren</button>
-      </div>
-      <p class="footer-note">
-        GitHub-tauglich als <span class="ok">eine einzelne HTML-Datei</span>. Kein Server nötig, keine Installation, keine externe Bibliothek.
-      </p>
-    </section>
-  </div>
+<div class="panel">
+<div class="output" id="output"></div>
+<div class="actions">
+<button onclick="generate()">Plan erstellen</button>
+<button onclick="copy()">Kopieren</button>
+<button onclick="exportICS()">Kalender</button>
+<button onclick="reset()">Reset</button>
+</div>
+</div>
 
-  <script>
-    const DAYS = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
-    const STORAGE_KEY = "kinky_wochenplan_v1";
+</div>
 
-    const defaultTasks = [
-      { name:"Vorfreude-Moment", category:"Wunsch", duration:"10 Min." },
-      { name:"Kleine Aufgabe", category:"Aufgabe", duration:"15 Min." },
-      { name:"Disziplinübung", category:"Disziplin", duration:"20 Min." }
-    ];
+<script>
+const DAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
 
-    const state = loadState();
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+let week=JSON.parse(localStorage.getItem("week")||"{}");
 
-    const weekRows = document.getElementById("weekRows");
-    const taskList = document.getElementById("taskList");
-    const output = document.getElementById("output");
+DAYS.forEach(d=>{if(!week[d])week[d]=["","",""];});
 
-    const startDate = document.getElementById("startDate");
-    const endDate = document.getElementById("endDate");
-    const planStatus = document.getElementById("planStatus");
-    const ownerName = document.getElementById("ownerName");
+function save(){
+localStorage.setItem("tasks",JSON.stringify(tasks));
+localStorage.setItem("week",JSON.stringify(week));
+}
 
-    const taskName = document.getElementById("taskName");
-    const taskCategory = document.getElementById("taskCategory");
-    const taskDuration = document.getElementById("taskDuration");
+function renderWeek(){
+let html="";
+DAYS.forEach(day=>{
+html+=`<div class="week-row">
+<div>${day}</div>
+${[0,1,2].map(i=>`
+<select onchange="setTask('${day}',${i},this.value)">
+<option value="">--</option>
+${tasks.map(t=>`<option ${week[day][i]==t.name?"selected":""}>${t.name}</option>`)}
+</select>`).join("")}
+</div>`;
+});
+document.getElementById("week").innerHTML=html;
+}
 
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw) return JSON.parse(raw);
-      }catch(e){}
-      return {
-        startDate:"",
-        endDate:"",
-        planStatus:"vorgeschlagen",
-        ownerName:"Anja",
-        tasks: defaultTasks,
-        week: DAYS.reduce((acc, day) => {
-          acc[day] = ["","",""];
-          return acc;
-        }, {})
-      };
-    }
+function renderTasks(){
+document.getElementById("tasks").innerHTML=
+tasks.map((t,i)=>`
+<div>
+${t.name} (${t.category})
+<button onclick="del(${i})">X</button>
+</div>`).join("");
+}
 
-    function saveState(){
-      const payload = {
-        startDate: startDate.value,
-        endDate: endDate.value,
-        planStatus: planStatus.value,
-        ownerName: ownerName.value,
-        tasks: state.tasks,
-        week: state.week
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    }
+function addTask(){
+const name=document.getElementById("taskInput").value;
+const cat=document.getElementById("cat").value;
+if(!name)return;
+tasks.push({name,category:cat});
+save();
+renderTasks();
+renderWeek();
+}
 
-    function taskLabel(task){
-      return `${task.name} · ${task.category}${task.duration ? " · " + task.duration : ""}`;
-    }
+function del(i){
+tasks.splice(i,1);
+save();
+renderTasks();
+renderWeek();
+}
 
-    function buildSelect(day, slotIndex){
-      const select = document.createElement("select");
-      const empty = document.createElement("option");
-      empty.value = "";
-      empty.textContent = "— auswählen —";
-      select.appendChild(empty);
+function setTask(day,i,val){
+week[day][i]=val;
+save();
+}
 
-      state.tasks.forEach(task => {
-        const option = document.createElement("option");
-        option.value = task.name;
-        option.textContent = taskLabel(task);
-        if(state.week[day][slotIndex] === task.name){
-          option.selected = true;
-        }
-        select.appendChild(option);
-      });
+function generate(){
+let out="";
+DAYS.forEach(d=>{
+out+=d+"\n";
+week[d].forEach(e=>{if(e)out+="- "+e+"\n"});
+out+="\n";
+});
+document.getElementById("output").textContent=out;
+}
 
-      select.addEventListener("change", () => {
-        state.week[day][slotIndex] = select.value;
-        saveState();
-      });
-      return select;
-    }
+function copy(){
+navigator.clipboard.writeText(document.getElementById("output").textContent);
+}
 
-    function renderWeek(){
-      weekRows.innerHTML = "";
-      DAYS.forEach(day => {
-        const row = document.createElement("div");
-        row.className = "day-row";
+function reset(){
+DAYS.forEach(d=>week[d]=["","",""]);
+save();
+renderWeek();
+}
 
-        const dayName = document.createElement("div");
-        dayName.className = "day-name";
-        dayName.textContent = day;
-        row.appendChild(dayName);
+function exportICS(){
+let start=document.getElementById("startDate").value;
+if(!start){alert("Startdatum fehlt");return;}
 
-        for(let i=0; i<3; i++){
-          row.appendChild(buildSelect(day, i));
-        }
-        weekRows.appendChild(row);
-      });
-    }
+let base=new Date(start);
+let ics="BEGIN:VCALENDAR\nVERSION:2.0\n";
 
-    function renderTasks(){
-      taskList.innerHTML = "";
-      if(!state.tasks.length){
-        taskList.innerHTML = '<div class="muted">Noch keine Einträge vorhanden.</div>';
-        return;
-      }
+DAYS.forEach((d,i)=>{
+let date=new Date(base);
+date.setDate(base.getDate()+i);
+let y=date.getFullYear();
+let m=("0"+(date.getMonth()+1)).slice(-2);
+let day=("0"+date.getDate()).slice(-2);
 
-      state.tasks.forEach((task, index) => {
-        const item = document.createElement("div");
-        item.className = "task-item";
+week[d].forEach(task=>{
+if(!task)return;
+ics+="BEGIN:VEVENT\n";
+ics+=`DTSTART;VALUE=DATE:${y}${m}${day}\n`;
+ics+=`SUMMARY:${task}\n`;
+ics+="END:VEVENT\n";
+});
+});
 
-        const info = document.createElement("div");
-        info.innerHTML = `<strong>${escapeHtml(task.name)}</strong><div class="task-meta">${escapeHtml(task.duration || "ohne Dauer")}</div>`;
-        item.appendChild(info);
+ics+="END:VCALENDAR";
 
-        const cat = document.createElement("div");
-        cat.className = "tag";
-        cat.textContent = task.category;
-        item.appendChild(cat);
+let blob=new Blob([ics]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="plan.ics";
+a.click();
+}
 
-        const fillBtn = document.createElement("button");
-        fillBtn.className = "tiny secondary";
-        fillBtn.textContent = "Nutzen";
-        fillBtn.title = "Eintrag in ersten freien Slot setzen";
-        fillBtn.addEventListener("click", () => quickAssign(task.name));
-        item.appendChild(fillBtn);
+renderTasks();
+renderWeek();
+</script>
 
-        const delBtn = document.createElement("button");
-        delBtn.className = "tiny ghost";
-        delBtn.textContent = "Löschen";
-        delBtn.addEventListener("click", () => {
-          const removedName = task.name;
-          state.tasks.splice(index, 1);
-          DAYS.forEach(day => {
-            state.week[day] = state.week[day].map(v => v === removedName ? "" : v);
-          });
-          saveState();
-          renderTasks();
-          renderWeek();
-        });
-        item.appendChild(delBtn);
-
-        taskList.appendChild(item);
-      });
-    }
-
-    function quickAssign(taskName){
-      for(const day of DAYS){
-        const idx = state.week[day].findIndex(v => !v);
-        if(idx !== -1){
-          state.week[day][idx] = taskName;
-          saveState();
-          renderWeek();
-          return;
-        }
-      }
-      alert("Die Woche ist schon voll.");
-    }
-
-    function escapeHtml(text){
-      return String(text)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function generateText(){
-      const lines = [];
-      const target = ownerName.value?.trim() ? ` für ${ownerName.value.trim()}` : "";
-      lines.push(`Wochenplan${target}`);
-      lines.push(`${startDate.value || "—"} bis ${endDate.value || "—"}`);
-      lines.push(`Status: ${planStatus.value}`);
-      lines.push("");
-
-      DAYS.forEach(day => {
-        const entries = state.week[day].filter(Boolean);
-        lines.push(day);
-        if(entries.length){
-          entries.forEach(entry => {
-            const task = state.tasks.find(t => t.name === entry);
-            const detail = task?.duration ? ` (${task.duration})` : "";
-            lines.push(`- ${entry}${detail}`);
-          });
-        } else {
-          lines.push("- frei");
-        }
-        lines.push("");
-      });
-
-      lines.push("Erstellt mit der Browser-Version des Kinky Wochenplans.");
-      return lines.join("\n");
-    }
-
-    document.getElementById("addTaskBtn").addEventListener("click", () => {
-      const name = taskName.value.trim();
-      const category = taskCategory.value;
-      const duration = taskDuration.value.trim();
-      if(!name){
-        alert("Bitte zuerst eine Aufgabe eintragen.");
-        return;
-      }
-      if(state.tasks.some(t => t.name.toLowerCase() === name.toLowerCase())){
-        alert("Diese Aufgabe gibt es schon.");
-        return;
-      }
-      state.tasks.push({ name, category, duration });
-      taskName.value = "";
-      taskDuration.value = "";
-      saveState();
-      renderTasks();
-      renderWeek();
-    });
-
-    document.getElementById("generateBtn").addEventListener("click", () => {
-      saveState();
-      output.textContent = generateText();
-    });
-
-    document.getElementById("copyBtn").addEventListener("click", async () => {
-      const text = output.textContent;
-      try{
-        await navigator.clipboard.writeText(text);
-        alert("Wochenplan kopiert.");
-      }catch(e){
-        alert("Kopieren hat nicht geklappt. Bitte Text manuell markieren.");
-      }
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      if(!confirm("Wirklich die Woche leeren?")){
-        return;
-      }
-      DAYS.forEach(day => state.week[day] = ["","",""]);
-      saveState();
-      renderWeek();
-      output.textContent = "Woche geleert.";
-    });
-
-    startDate.value = state.startDate || "";
-    endDate.value = state.endDate || "";
-    planStatus.value = state.planStatus || "vorgeschlagen";
-    ownerName.value = state.ownerName || "Anja";
-
-    [startDate, endDate, planStatus, ownerName].forEach(el => {
-      el.addEventListener("change", saveState);
-      el.addEventListener("input", saveState);
-    });
-
-    renderTasks();
-    renderWeek();
-    output.textContent = generateText();
-  </script>
 </body>
 </html>
